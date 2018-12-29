@@ -7,6 +7,7 @@ function makeGraphs(error, salaryData) {
     salaryData.forEach(function (d){
         d.salary=parseInt(d.salary);
         d.yrs_service=parseInt(d["yrs.service"]);
+        d.yrs_since_phd=parseInt(d["yrs.since.phd"]);
     })
     
     show_discipline_selector(ndx);
@@ -16,6 +17,7 @@ function makeGraphs(error, salaryData) {
     show_average_salary(ndx);
     show_rank_distribution(ndx);
     show_service_to_salary_correlation(ndx);
+    show_phd_to_salary_correlation(ndx);
 
     dc.renderAll();
 }
@@ -208,5 +210,40 @@ function show_service_to_salary_correlation(ndx) {
         .dimension(experienceDim)
         .group(experienceSalaryGroup)
         .margins({top:10, right:50, bottom:75, left:75});
-
 }
+
+function show_phd_to_salary_correlation(ndx) {
+    var genderColors = d3.scale.ordinal()
+        .domain(["Female", "Male"])
+        .range(["fuchsia", "blue"]);
+    
+    var sincephdDim = ndx.dimension(dc.pluck('yrs_since_phd'));
+    var phdDim = ndx.dimension(function(d) {
+        return [d.yrs_since_phd, d.salary, d.rank, d.sex];
+    });
+    var phdSalaryGroup = phdDim.group(); 
+    
+    var minPhd = sincephdDim.bottom(1)[0].yrs_since_phd;
+    var maxPhd = sincephdDim.top(1)[0].yrs_since_phd;
+    
+    dc.scatterPlot("#phd-salary")
+        .width(800)
+        .height(400)
+        .x(d3.scale.linear().domain([minPhd, maxPhd]))
+        .brushOn(false)
+        .symbolSize(8)
+        .clipPadding(10)
+        .yAxisLabel("Salary")
+        .xAxisLabel("Years since PHD")
+        .title(function(d) {
+            return d.key[2] - "earned" - d.key[1];
+        })
+        .colorAccessor(function(d){
+            return d.key[3];
+        })
+        .colors(genderColors)
+        .dimension(phdDim)
+        .group(phdSalaryGroup)
+        .margins({top:10, right:50, bottom:75, left:75});
+}
+
