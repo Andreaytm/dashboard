@@ -9,7 +9,8 @@ function makeGraphs(error, salaryData) {
     })
     
     show_discipline_selector(ndx);
-    show_percent_that_are_professors(ndx);
+    show_percent_that_are_professors(ndx, "Female", "#percentage-of-female-professors");
+    show_percent_that_are_professors(ndx, "Male", "#percentage-of-male-professors");
     show_gender_balance(ndx);
     show_average_salary(ndx);
     show_rank_distribution(ndx);
@@ -26,10 +27,10 @@ function show_discipline_selector(ndx) {
         .group(group)
         .dimension(dim);
 }
-function show_percent_that_are_professors(ndx) {
-    var percentageFemaleThatAreProf = ndx.groupAll().reduce(
+function show_percent_that_are_professors(ndx, gender, element) {
+    var percentageThatAreProf = ndx.groupAll().reduce(
         function (p, v) {
-            if (v.sex === "Female"){
+            if (v.sex === gender){
                 p.count ++;
                 if (v.rank === "Prof"){
                     p.are_prof++;
@@ -38,7 +39,7 @@ function show_percent_that_are_professors(ndx) {
             return p;
         },
         function (p, v) {
-            if (v.sex === "Female"){
+            if (v.sex === gender){
                 p.count --;
                 if (v.rank === "Prof"){
                     p.are_prof--;
@@ -50,7 +51,7 @@ function show_percent_that_are_professors(ndx) {
             return {count: 0, are_prof: 0};
         }        
     );
-    dc.numberDisplay("#percentage-of-female-professors")
+    dc.numberDisplay(element)
         .formatNumber(d3.format(".2%"))
         .valueAccessor(function(d){
             if(d.count ==0){
@@ -59,7 +60,7 @@ function show_percent_that_are_professors(ndx) {
                 return (d.are_prof/d.count);
             }
         })
-        .group(percentageFemaleThatAreProf);
+        .group(percentageThatAreProf);
 } 
 
 function show_gender_balance(ndx) {
